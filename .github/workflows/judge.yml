@@ -1,0 +1,269 @@
+name: LKS Laravel UMKM Auto Judge
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      ################################
+      # CHECKOUT
+      ################################
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      ################################
+      # INIT SCORE
+      ################################
+
+      - name: Init score
+        run: echo "SCORE=0" >> $GITHUB_ENV
+
+
+      ################################
+      # DETECT LARAVEL STRUCTURE
+      ################################
+
+      - name: Laravel structure (+5)
+        run: |
+          if [ -f artisan ] && [ -d app ] && [ -d routes ]; then
+            echo "Laravel detected"
+            echo "SCORE=$(($SCORE+5))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # SANCTUM AUTH
+      ################################
+
+      - name: Sanctum configured (+10)
+        run: |
+          if grep -q HasApiTokens app/Models/User.php 2>/dev/null && \
+             grep -q sanctum config/auth.php 2>/dev/null && \
+             grep -R "auth:sanctum" routes 2>/dev/null; then
+            echo "Sanctum OK"
+            echo "SCORE=$(($SCORE+10))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # LOGIN ENDPOINT
+      ################################
+
+      - name: Login endpoint (+5)
+        run: |
+          if grep -R "login" routes/api.php 2>/dev/null; then
+            echo "Login endpoint OK"
+            echo "SCORE=$(($SCORE+5))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # ROLE FIELD
+      ################################
+
+      - name: Role field users (+5)
+        run: |
+          if grep -R "role" database/migrations 2>/dev/null; then
+            echo "Role detected"
+            echo "SCORE=$(($SCORE+5))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # UMKM MODEL + MIGRATION
+      ################################
+
+      - name: UMKM schema (+10)
+        run: |
+          if grep -R "nama_umkm" database/migrations 2>/dev/null && \
+             grep -R "pemilik" database/migrations 2>/dev/null; then
+            echo "UMKM schema OK"
+            echo "SCORE=$(($SCORE+10))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # PRODUCT MODEL + MIGRATION
+      ################################
+
+      - name: Product schema (+10)
+        run: |
+          if grep -R "nama_produk" database/migrations 2>/dev/null && \
+             grep -R "umkm_id" database/migrations 2>/dev/null; then
+            echo "Product schema OK"
+            echo "SCORE=$(($SCORE+10))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # PRODUCT CRUD ROUTES
+      ################################
+
+      - name: Product routes (+8)
+        run: |
+          if grep -R "products" routes/api.php 2>/dev/null; then
+            echo "Product routes OK"
+            echo "SCORE=$(($SCORE+8))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # UMKM CRUD ROUTES
+      ################################
+
+      - name: UMKM routes (+8)
+        run: |
+          if grep -R "umkm" routes/api.php 2>/dev/null; then
+            echo "UMKM routes OK"
+            echo "SCORE=$(($SCORE+8))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # FILTERING PRODUCTS
+      ################################
+
+      - name: Filtering logic (+10)
+        run: |
+          if grep -R "kategori" app 2>/dev/null && \
+             grep -R "status" app 2>/dev/null && \
+             grep -R "request" app 2>/dev/null; then
+            echo "Filtering OK"
+            echo "SCORE=$(($SCORE+10))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # PAGINATION PRODUCTS
+      ################################
+
+      - name: Pagination (+10)
+        run: |
+          if grep -R "paginate(" app 2>/dev/null; then
+            echo "Pagination detected"
+            echo "SCORE=$(($SCORE+10))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # FORM REQUEST VALIDATION
+      ################################
+
+      - name: FormRequest validation (+10)
+        run: |
+          if [ -d app/Http/Requests ] && [ "$(ls -A app/Http/Requests)" ]; then
+            echo "FormRequest OK"
+            echo "SCORE=$(($SCORE+10))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # API RESOURCE
+      ################################
+
+      - name: API Resource (+5)
+        run: |
+          if [ -d app/Http/Resources ]; then
+            echo "Resource detected"
+            echo "SCORE=$(($SCORE+5))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # ELOQUENT RELATIONSHIP
+      ################################
+
+      - name: Relationship UMKM Products (+5)
+        run: |
+          if grep -R "hasMany" app/Models 2>/dev/null && \
+             grep -R "belongsTo" app/Models 2>/dev/null; then
+            echo "Relationship OK"
+            echo "SCORE=$(($SCORE+5))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # AUTHORIZATION CHECK
+      ################################
+
+      - name: Authorization role check (+4)
+        run: |
+          if grep -R "role" app 2>/dev/null && \
+             grep -R "admin" app 2>/dev/null; then
+            echo "Authorization detected"
+            echo "SCORE=$(($SCORE+4))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # README FILE
+      ################################
+
+      - name: README exists (+3)
+        run: |
+          if [ -f README.md ]; then
+            echo "README OK"
+            echo "SCORE=$(($SCORE+3))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # BONUS FEATURES
+      ################################
+
+      - name: Bonus feature (+7)
+        run: |
+          if grep -R "export" app 2>/dev/null || \
+             grep -R "Excel" app 2>/dev/null || \
+             grep -R "activity_log" app 2>/dev/null; then
+            echo "Bonus detected"
+            echo "SCORE=$(($SCORE+7))" >> $GITHUB_ENV
+          fi
+
+
+      ################################
+      # FINAL SCORE
+      ################################
+
+      - name: Print score
+        run: |
+          echo "==============================="
+          echo "FINAL SCORE: $SCORE / 100"
+          echo "==============================="
+
+
+      ################################
+      # SAVE SCORE FILE
+      ################################
+
+      - name: Save score artifact
+        run: |
+          echo "Score: $SCORE / 100" > score.txt
+
+
+      ################################
+      # UPLOAD SCORE
+      ################################
+
+      - name: Upload score
+        uses: actions/upload-artifact@v4
+        with:
+          name: autojudge-score
+          path: score.txt
+
+
+      ################################
+      # SUMMARY
+      ################################
+
+      - name: Summary output
+        run: |
+          echo "## 🏁 Auto Judge Result" >> $GITHUB_STEP_SUMMARY
+          echo "Final Score: **$SCORE / 100**" >> $GITHUB_STEP_SUMMARY
