@@ -1,0 +1,91 @@
+name: LKS Laravel UMKM Auto Judge
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      ################################
+      # INIT SCORE
+      ################################
+
+      - name: Init score
+        run: echo "SCORE=0" >> $GITHUB_ENV
+
+
+      ################################
+      # (SEMUA STEP CHECK KAMU TETAP)
+      ################################
+
+
+      ################################
+      # FINAL SCORE
+      ################################
+
+      - name: Print score
+        run: |
+          echo "==============================="
+          echo "FINAL SCORE: $SCORE / 100"
+          echo "==============================="
+
+
+      ################################
+      # EXPORT SCORE.JSON (UNTUK DASHBOARD)
+      ################################
+
+      - name: Export score.json
+        run: |
+          mkdir -p public
+          echo "{ \"score\": \"$SCORE\" }" > public/score.json
+
+
+      ################################
+      # COMMIT SCORE.JSON
+      ################################
+
+      - name: Commit score.json
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add public/score.json
+          git commit -m "update autojudge score" || echo "no changes"
+          git push
+
+
+      ################################
+      # SAVE SCORE FILE (artifact lama tetap)
+      ################################
+
+      - name: Save score artifact
+        run: |
+          echo "Score: $SCORE / 100" > score.txt
+
+
+      ################################
+      # UPLOAD SCORE
+      ################################
+
+      - name: Upload score
+        uses: actions/upload-artifact@v4
+        with:
+          name: autojudge-score
+          path: score.txt
+
+
+      ################################
+      # SUMMARY
+      ################################
+
+      - name: Summary output
+        run: |
+          echo "## 🏁 Auto Judge Result" >> $GITHUB_STEP_SUMMARY
+          echo "Final Score: **$SCORE / 100**" >> $GITHUB_STEP_SUMMARY
