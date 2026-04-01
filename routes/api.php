@@ -30,3 +30,10 @@ Route::post('/logout', [AuthController::class, 'Logout'])->middleware('auth:sanc
 
 Route::apiResource('/umkm', UmkmController::class)->middleware('auth:sanctum');
 Route::apiResource('/produk', ProdukController::class)->middleware('auth:sanctum');
+
+Route::get('/produk/{id}', [ProdukController::class, 'destroy'])->middleware('auth:sanctum', 'role:admin');
+
+Route::post('/me', function(Request $request) {
+    return response()->json($request->user())
+    ->middleware('auth:sanctum');
+});
