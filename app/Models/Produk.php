@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Umkm;
 
 class Produk extends Model
 {
-    public function Umkm() {
+    public function umkm() {
         return $this->BelongsTo(Umkm::class);
     }
 

@@ -7,8 +7,20 @@ use Illuminate\Http\Request;
 
 class produkController extends Controller
 {
-    public function index() {
-        return response()->json(Produk::all());
+    public function index(Request $request) {
+        $query = Produk::query();
+
+        if ($request->nama) {
+            $query->where('nama', 'like', '%' . $request->nama . '%');
+        }
+        if ($request->harga_min) {
+            $query->where('harga_min', '>=', $request->harga_min);
+        }
+        if ($request->harga_max) {
+            $query->where('harga_max', '<=', $request->harga_max);
+        }
+
+        return response()->json($query::paginate());
     }
 
     public function store(Request $request) {
