@@ -19,7 +19,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/tokens/create', function(Request $request) {
-    $token = $request->user()->createToken($request->toke_name);
+    $token = $request->user()->createToken($request->token_name);
 
     return ['token' => $token->plainTextToken];
 });
@@ -27,3 +27,5 @@ Route::post('/tokens/create', function(Request $request) {
 Route::post('/register', [AuthController::class, 'Register']);
 Route::post('/login', [AuthController::class, 'Login']);
 Route::post('/logout', [AuthController::class, 'Logout'])->middleware('auth:sanctum');
+
+Route::apiResource('/umkm', UmkmController::class)->middleware('auth:sanctum');

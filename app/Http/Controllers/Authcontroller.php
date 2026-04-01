@@ -13,7 +13,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->passowrd)
+            'password' => Hash::make($request->password)
 
         ]);
 
@@ -21,24 +21,26 @@ class AuthController extends Controller
     }
 
     public function Login(Request $request) {
-        if (Auth::attempt($request->only('email', 'password'))) {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'email or password invalid'
-            ]);
+                'message' => 'email or password invalid',
+            ], 401);
         }
 
         $user = Auth::User();
-        $token = $user->createToken('token_name')->plainTextToken;
+
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successfull',
             'data' => $user,
-            'token' => $token
+            'token' => $token,
         ]);
     }
 
     public function Logout(Request $request) {
-        $request->user()->token()->delete();
+        $request->user()->Tokens()->delete();
+
         return response()->json([
             'message' => 'User logged out'
         ]);
