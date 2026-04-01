@@ -29,3 +29,4 @@ Route::post('/login', [AuthController::class, 'Login']);
 Route::post('/logout', [AuthController::class, 'Logout'])->middleware('auth:sanctum');
 
 Route::apiResource('/umkm', UmkmController::class)->middleware('auth:sanctum');
+Route::apiResource('/produk', ProdukController::class)->middleware('auth:sanctum');

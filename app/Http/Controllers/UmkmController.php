@@ -18,7 +18,7 @@ class UmkmController extends Controller
             'pemilik' => $request->pemilik,
             'alamat' => $request->alamat,
             'telepon' => $request->telepon,
-            'status' => 'aktif | nonaktif'
+            'status' => $request->status,
         ]);
         return response()->json($umkm);
    }
@@ -36,6 +36,7 @@ class UmkmController extends Controller
             'telepon' => $request->telepon,
             'status' => 'aktif | nonaktif'
         ]);
+        return response()->json($umkm);
    }
 
    public function destroy($id) {
